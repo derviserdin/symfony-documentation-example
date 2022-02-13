@@ -1,3 +1,27 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
+
+#Tüm request türleri erişebilir
+blog_list:
+  path: /api/blog
+  controller: App\Controller\BlogApiController::list
+
+#Sadece GET ve HEAD Request Türleri
+api_post_show:
+  path: /api/posts/{id}
+  controller: App\Controller\BlogApiController::show
+  methods:  GET|HEAD
+
+#Sadece PUT Request Türleri
+api_post_edit:
+  path: /api/posts/{id}
+  controller: App\Controller\BlogApiController::edit
+  methods:  PUT
+
+
+api_blog_show:
+  path:       /api/blog/{slug}
+  controller: App\Controller\BlogApiController::blog
+
+
