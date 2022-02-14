@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Symfony!</title>
+</head>
+<body>
+<h1>{{ page_title }}</h1>
+
+{% if user.isLoggedIn %}
+    Hello {{ user.name }}!
+{% endif %}
+
+<h1>Hello {{ user_first_name }}!</h1>
+
+{#  "|length" Kaç bildirim var bulmak için... #}
+<p>You have {{ notifications|length }} new notifications.</p>
+{#  Blog adlı bir route gider ve çalıştırır #}
+<a href="{{ path('blog') }}">Homepage</a>
+
+<br><br>
+{#  Blog adlı bir route gider ve çalıştırır #}
+
+<a href="{{ url('luck_number') }}"> Luck Number </a>
+<br><br>
+{# the image lives at "public/images/header_logo.png" #}
+<img src="{{ asset('images/header-logo.svg') }}" alt="Symfony!"/>
+
+
+<br>
+<br>
+<br>
+<p>Username: {{ app.user.username ?? 'Anonymous user' }}</p>
+{% if app.debug %}
+    <p>Request Method: {{ app.request.method }}</p>
+    <p>Application Enviroment: {{ app.enviroment }}</p>
+{% endif %}
+
+{# the CSS file lives at "public/css/blog.css" #}
+<link href="{{ asset('css/blog.css') }}" rel="stylesheet"/>
+
+{# the JS file lives at "public/bundles/acme/js/loader.js" #}
+<script src="{{ asset('bundles/acme/js/loader.js') }}"></script>
+
+{# ... #}
+</body>
+</html>
+
+
+

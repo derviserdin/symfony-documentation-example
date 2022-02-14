@@ -13,7 +13,7 @@ class LuckyController extends AbstractController
 
 
     /**
-     * @Route("/lucky/number")
+     * @Route("/lucky/number", name="luck_number")
      */
     public function number(): Response
     {
@@ -62,9 +62,9 @@ class LuckyController extends AbstractController
     /**
      * @Route("/home")
      * @return RedirectResponse
-     */
+
     public function redirect(): RedirectResponse
     {
         return $this->redirect('http://symfony.com/doc');
-    }
+    } */
 }

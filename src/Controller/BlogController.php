@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class BlogController extends AbstractController
 {
     /**
-     * @Route("/blog")
+     * @Route("/blog", name="blog")
      */
     public function list()
     {
