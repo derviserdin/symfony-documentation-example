@@ -65,5 +65,18 @@ class TaskController extends AbstractController
         return new Response($sonuc);
     }
 
+    public function new2(Request $request): Response
+    {
+        //görev nesnesi oluşturup bazı verileri içerisine yazalım
+        $task=new Task();
+        $task->setTask('Write a blog post');
+        $task->setDueDate(new \DateTime('tomorrow'));
+
+        $form= $this->createFormBuilder($task)
+            ->add('task', TextType::class)
+            ->add('dueDate', DateType::class)
+            ->add('save', SubmitType::class, ['label' => 'Create Task'])
+            ->getForm();
+    }
 
 }

@@ -16,7 +16,7 @@ class TaskType extends AbstractType
     {
         $builder
             ->add('task', null, [
-                'required' => true,
+                'required' => false,
                 'attr' => ['maxLength' => 4]
             ])
             ->add('dueDate', DateType::class, [

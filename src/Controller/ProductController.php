@@ -10,19 +10,26 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Form\ProductsType;
 use App\Repository\ProductRepository;
+use App\Service\FileUploader;
 use App\Service\MessageGenerator;
+use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ManagerRegistry;
 use MongoDB\Driver\Manager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ProductController extends AbstractController
 {
     /**
-     * @Route("/products")
+     * @Route("/products", name="product")
      */
     public function list(MessageGenerator $messageGenerator): Response
     {
@@ -46,7 +53,7 @@ class ProductController extends AbstractController
 
 
         $product = new Product();
-        $product->setName('');
+        $product->setName(null);
         $product->setPrice('1999');
         $product->setDescription("Ergonomic and stylish!");
 
@@ -71,7 +78,7 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/product/{id}", name="product_show")
+     * @Route("/productt/{id}", name="product_show")
      */
     public function show(ManagerRegistry $doctrine, ProductRepository $productRepository, int $id): Response
     {
@@ -107,15 +114,14 @@ class ProductController extends AbstractController
             throw $this->createNotFoundException('NO product found for id ' . $id);
         }
 
-        $textMessage = 'Check out this great product: ' . $product->getName().
-            '<br><br> Repository kullanılarak gelen: '.$productRepo->getName().
-            '<br><br> İsime göre Ürün arayan repo methodu: '.$productOneBy->getName().
-            '<br><br> Fiyata göre sıralanıp Ad alanı ile eşleşenleri sıralama methodu: '.print_r($productsFindBy).
-            '<br><br> Tablodak verileri sıralama methodu: '.print_r($productsAll).
-            '<br><br> İsime göre Ürün ve Fiyat arayan repo methodu: '.$productOneByOr->getName();
+        $textMessage = 'Check out this great product: ' . $product->getName() .
+            '<br><br> Repository kullanılarak gelen: ' . $productRepo->getName() .
+            '<br><br> İsime göre Ürün arayan repo methodu: ' . $productOneBy->getName() .
+            '<br><br> Fiyata göre sıralanıp Ad alanı ile eşleşenleri sıralama methodu: ' . print_r($productsFindBy) .
+            '<br><br> Tablodak verileri sıralama methodu: ' . print_r($productsAll) .
+            '<br><br> İsime göre Ürün ve Fiyat arayan repo methodu: ' . $productOneByOr->getName();
 
         return new Response($textMessage);
-
 
 
         // or render a template
@@ -134,12 +140,12 @@ class ProductController extends AbstractController
 
         if (!$product) {
             throw $this->createNotFoundException(
-                'No product found for id '.$id
+                'No product found for id ' . $id
             );
         }
 
         $product->setName('Keyboard');
-       // gerekli değil zaten değişiklik için seçilmiş nesneyi biliyoruz $entityManager->persist($product)
+        // gerekli değil zaten değişiklik için seçilmiş nesneyi biliyoruz $entityManager->persist($product)
         $entityManager->flush();
 
         return $this->redirectToRoute('product_show', [
@@ -148,13 +154,6 @@ class ProductController extends AbstractController
     }
 
 
-    /**
-     * @Route("/product/{id}", name="product_show")
-     */
-    public function showOne(Product $product,int $id): Response
-    {
-        return new Response($product->getName());
-    }
 
     /**
      * @Route("/product/delete/{id}")
@@ -166,7 +165,7 @@ class ProductController extends AbstractController
 
         if (!$product) {
             throw $this->createNotFoundException(
-                'No product found for id '.$id
+                'No product found for id ' . $id
             );
         }
 
@@ -174,7 +173,44 @@ class ProductController extends AbstractController
         // gerekli değil zaten değişiklik için seçilmiş nesneyi biliyoruz $entityManager->persist($product)
         $entityManager->flush();
 
-       return new Response('Kayıt Silindi...');
+        return new Response('Kayıt Silindi...');
     }
 
+    /**
+     * @Route("/product/new", name="app_product_new")
+     */
+    public function new(Request $request, SluggerInterface $slugger, ManagerRegistry $entityManager, FileUploader $fileUploader)
+    {
+
+        $product = new Product();
+        $form = $this->createForm(ProductsType::class, $product);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile $brochureFile */
+            $brochureFile = $form->get('brochureFilename')->getData();
+
+            // this condition is needed because the 'brochure' field is not required
+            // so the PDF file must be processed only when a file is uploaded
+            if ($brochureFile) {
+                $brochureFileName = $fileUploader->upload($brochureFile);
+                $product->setBrochureFilename($brochureFileName);
+            }
+            $doc=$entityManager->getManager();
+
+            $doc->persist($form->getData());
+            //flush() ile sorguyu çalıştırıyoruz
+            $doc->flush();
+            // ... persist the $product variable or any other work
+
+            return $this->redirectToRoute('app_product_new',[
+                'message' => 'Eklendi'
+            ]);
+        }
+
+        return $this->renderForm('product/new.html.twig', [
+            'form' => $form,
+          //  'message' => 'Ekleme'
+        ]);
+    }
 }
